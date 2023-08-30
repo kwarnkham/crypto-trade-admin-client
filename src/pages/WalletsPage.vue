@@ -37,7 +37,24 @@
             </td>
             <td class="text-right">{{ wallet.trx.toLocaleString() }}</td>
             <td class="text-right">{{ wallet.balance.toLocaleString() }}</td>
-            <td class="text-right">{{ wallet.resource }}</td>
+            <td class="text-right">
+              <div>
+                Bandwidth :
+                {{
+                  (wallet.resource?.freeNetLimit ?? 0) -
+                  (wallet.resource?.freeNetUsed ?? 0) -
+                  (wallet.resource?.NetUsed ?? 0) +
+                  (wallet.resource?.NetLimit ?? 0)
+                }}
+              </div>
+              <div>
+                Energy :
+                {{
+                  (wallet.resource?.EnergyLimit ?? 0) -
+                  (wallet.resource?.EnergyUsed ?? 0)
+                }}
+              </div>
+            </td>
             <td class="text-right">
               <q-btn
                 label="Activate"
@@ -45,6 +62,15 @@
                 dense
                 flat
                 @click="activateWallet(wallet.id)"
+                v-if="!wallet.activated_at"
+              />
+              <q-btn
+                no-caps
+                dense
+                flat
+                icon="autorenew"
+                @click="refreshBalance(wallet.id)"
+                v-else
               />
             </td>
           </tr>
@@ -69,9 +95,9 @@ import { copyToClipboard, useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import usePagination from "src/composables/pagination";
 
-const { pagination, current, max } = usePagination("wallets");
+const { pagination, current, max } = usePagination("/wallets");
 
-const { notify, dialog } = useQuasar();
+const { notify, dialog, loading } = useQuasar();
 
 const copyAddress = (address) => {
   copyToClipboard(address)
@@ -89,6 +115,29 @@ const copyAddress = (address) => {
     });
 };
 
+const refreshBalance = (walletId) => {
+  loading.show();
+  api({
+    method: "GET",
+    url: `/wallets/${walletId}`,
+  })
+    .then(({ data }) => {
+      const index = pagination.value.data.findIndex(
+        (e) => e.id == data.wallet.id
+      );
+      pagination.value.data.splice(index, 1, data.wallet);
+    })
+    .catch((error) => {
+      notify({
+        message: error.message,
+        type: "negative",
+      });
+    })
+    .finally(() => {
+      loading.hide();
+    });
+};
+
 const activateWallet = (walletId) => {
   dialog({
     title: "Confirm",
@@ -101,8 +150,10 @@ const activateWallet = (walletId) => {
       url: `/wallets/${walletId}/activate`,
     })
       .then(({ data }) => {
-        const index = wallets.value.findIndex((e) => e.id == data.wallet.id);
-        wallets.value.splice(index, data.wallet);
+        const index = pagination.value.data.findIndex(
+          (e) => e.id == data.wallet.id
+        );
+        pagination.value.data.splice(index, 1, data.wallet);
       })
       .catch((error) => {
         notify({
