@@ -91,6 +91,14 @@ const links = [
     },
   },
   {
+    title: "Wallets",
+    icon: "home",
+    name: "wallets",
+    action: () => {
+      router.push({ name: "wallets" });
+    },
+  },
+  {
     title: "Change Password",
     icon: "lock",
     name: "change-password",
