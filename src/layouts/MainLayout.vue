@@ -9,24 +9,34 @@
           icon="menu"
           aria-label="Menu"
           @click="leftDrawerOpen = !leftDrawerOpen"
+          v-if="userStore.getUser"
         />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-btn
+          flat
+          dense
+          round
+          icon="keyboard_arrow_left"
+          aria-label="Back"
+          @click="$router.go(-1)"
+          v-if="!['index', 'login'].includes($route.name)"
+        />
 
-        <div>Quasar v{{ $q.version }}</div>
+        <q-toolbar-title> Crypto Trade Admin </q-toolbar-title>
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer v-model="leftDrawerOpen" bordered v-if="userStore.getUser">
       <q-list>
         <q-item-label header>
           Welcome : {{ userStore.getUser?.name }}
         </q-item-label>
 
         <EssentialLink
-          v-for="link in essentialLinks"
+          v-for="link in links"
           :key="link.title"
           v-bind="link"
+          :class="{ 'text-primary': link.name == $route.name }"
         />
       </q-list>
     </q-drawer>
@@ -58,6 +68,8 @@ const logout = () => {
       url: "/admin/logout",
     });
     LocalStorage.remove("token");
+    LocalStorage.remove("user");
+    userStore.setUser(null);
     axiosInstance.defaults.headers.common["Authorization"] = undefined;
     router.replace({ name: "login" });
   });
@@ -69,42 +81,22 @@ const leftDrawerOpen = ref(false);
 
 const userStore = useUserStore();
 
-const essentialLinks = [
+const links = [
   {
-    title: "Docs",
-    caption: "quasar.dev",
-    icon: "school",
-    link: "https://quasar.dev",
+    title: "Home",
+    icon: "home",
+    name: "index",
+    action: () => {
+      router.push({ name: "index" });
+    },
   },
   {
-    title: "Github",
-    caption: "github.com/quasarframework",
-    icon: "code",
-    link: "https://github.com/quasarframework",
-  },
-  {
-    title: "Discord Chat Channel",
-    caption: "chat.quasar.dev",
-    icon: "chat",
-    link: "https://chat.quasar.dev",
-  },
-  {
-    title: "Forum",
-    caption: "forum.quasar.dev",
-    icon: "record_voice_over",
-    link: "https://forum.quasar.dev",
-  },
-  {
-    title: "Twitter",
-    caption: "@quasarframework",
-    icon: "rss_feed",
-    link: "https://twitter.quasar.dev",
-  },
-  {
-    title: "Facebook",
-    caption: "@QuasarFramework",
-    icon: "public",
-    link: "https://facebook.quasar.dev",
+    title: "Change Password",
+    icon: "lock",
+    name: "change-password",
+    action: () => {
+      router.push({ name: "change-password" });
+    },
   },
   {
     title: "Logout",

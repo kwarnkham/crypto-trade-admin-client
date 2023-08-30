@@ -45,6 +45,7 @@ const submit = () => {
   })
     .then(({ data }) => {
       localStorage.set("token", data.token);
+      localStorage.set("user", data.admin);
       axiosInstance.defaults.headers.common["Authorization"] =
         "Bearer " + data.token;
       setUser(data.admin);

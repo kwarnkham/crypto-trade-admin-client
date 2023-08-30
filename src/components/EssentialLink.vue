@@ -1,5 +1,5 @@
 <template>
-  <q-item clickable tag="a" :href="link" @click="action">
+  <q-item clickable tag="div" @click="action">
     <q-item-section v-if="icon" avatar>
       <q-icon :name="icon" />
     </q-item-section>
@@ -25,11 +25,6 @@ export default defineComponent({
     caption: {
       type: String,
       default: "",
-    },
-
-    link: {
-      type: String,
-      default: "#",
     },
 
     icon: {

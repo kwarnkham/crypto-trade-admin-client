@@ -1,6 +1,7 @@
 import { boot } from 'quasar/wrappers'
 import axios from 'axios'
 import { LocalStorage } from 'quasar';
+import { useUserStore } from 'src/stores/user-store';
 
 // Be careful when using SSR for cross-request state pollution
 // due to creating a Singleton instance here;
@@ -27,8 +28,13 @@ const api = (options) => {
   })
 }
 
-export default boot(({ app }) => {
+export default boot(({ app, store }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
+  const user = LocalStorage.getItem('user')
+  const userStore = useUserStore(store)
+  if (user)
+    userStore.setUser(user)
+
 
   app.config.globalProperties.$axios = axiosInstance
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
