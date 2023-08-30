@@ -13,8 +13,9 @@
         <thead>
           <tr>
             <th class="text-left">#</th>
-            <th class="text-right">Address</th>
+            <th class="text-left">Address</th>
             <th class="text-right">TRX</th>
+            <th class="text-right">Staked(Energy/Bandwidth)</th>
             <th class="text-right">USDT</th>
             <th class="text-right">Resource</th>
             <th class="text-right">Actions</th>
@@ -24,7 +25,7 @@
           <tr v-for="wallet in pagination.data" :key="wallet.id">
             <td class="text-left">{{ wallet.id }}</td>
             <td
-              class="text-right"
+              class="text-left"
               :class="{ 'text-warning': !wallet.activated_at }"
             >
               {{ wallet.base58_check
@@ -36,10 +37,23 @@
               />
             </td>
             <td class="text-right">{{ wallet.trx.toLocaleString() }}</td>
+            <td class="text-right">
+              {{ wallet.staked_for_energy.toLocaleString() }}/{{
+                wallet.staked_for_bandwidth.toLocaleString()
+              }}
+            </td>
             <td class="text-right">{{ wallet.balance.toLocaleString() }}</td>
             <td class="text-right">
               <div>
-                Bandwidth :
+                <q-btn
+                  dense
+                  flat
+                  label="Bandwidth"
+                  no-caps
+                  @click="stake(wallet, 'BANDWIDTH')"
+                  :disable="wallet.trx < 2"
+                />
+                :
                 {{
                   (wallet.resource?.freeNetLimit ?? 0) -
                   (wallet.resource?.freeNetUsed ?? 0) -
@@ -48,7 +62,15 @@
                 }}
               </div>
               <div>
-                Energy :
+                <q-btn
+                  dense
+                  flat
+                  label="Energy"
+                  no-caps
+                  @click="stake(wallet, 'ENERGY')"
+                  :disable="wallet.trx < 2"
+                />
+                :
                 {{
                   (wallet.resource?.EnergyLimit ?? 0) -
                   (wallet.resource?.EnergyUsed ?? 0)
@@ -115,6 +137,46 @@ const copyAddress = (address) => {
     });
 };
 
+const stake = (wallet, type) => {
+  dialog({
+    title: "Amount",
+    message: "Enter the amount of TRX you want to stake",
+    noBackdropDismiss: true,
+    cancel: true,
+    prompt: {
+      model: "",
+      autofocus: true,
+      type: "number",
+      inputmode: "numeric",
+      pattern: "[0-9]*",
+      isValid: (val) => val != "" && val > 0 && val < wallet.trx - 1,
+    },
+  }).onOk((amount) => {
+    loading.show();
+    api({
+      method: "POST",
+      url: `/wallets/${wallet.id}/stake`,
+      data: {
+        amount,
+        type,
+      },
+    })
+      .then(({ data }) => {
+        const index = pagination.value.data.findIndex(
+          (e) => e.id == data.wallet.id
+        );
+        pagination.value.data.splice(index, 1, data.wallet);
+      })
+      .catch((error) => {
+        notify({
+          message: error.message,
+          type: "negative",
+        });
+      })
+      .finally(loading.hide);
+  });
+};
+
 const refreshBalance = (walletId) => {
   loading.show();
   api({
@@ -133,9 +195,7 @@ const refreshBalance = (walletId) => {
         type: "negative",
       });
     })
-    .finally(() => {
-      loading.hide();
-    });
+    .finally(loading.hide);
 };
 
 const activateWallet = (walletId) => {
