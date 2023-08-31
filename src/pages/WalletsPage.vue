@@ -15,21 +15,28 @@
             <th class="text-left">#</th>
             <th class="text-left">Address</th>
             <th class="text-right">TRX</th>
-            <th class="text-right">Staked(Energy/Bandwidth)</th>
             <th class="text-right">USDT</th>
             <th class="text-right">Resource</th>
             <th class="text-right">Actions</th>
+            <th class="text-right">
+              <div>Staked</div>
+              (Energy / Bandwidth)
+            </th>
+            <th class="text-right">
+              <div>Unstaked</div>
+              (Energy / Bandwidth)
+            </th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="wallet in pagination.data" :key="wallet.id">
-            <td class="text-left">{{ wallet.id }}</td>
+          <tr v-for="(wallet, key) in pagination.data" :key="wallet.id">
+            <td class="text-left">{{ key + 1 }}</td>
             <td
               class="text-left"
               :class="{ 'text-warning': !wallet.activated_at }"
             >
-              {{ wallet.base58_check
-              }}<q-btn
+              {{ wallet.base58_check }}
+              <q-btn
                 dense
                 icon="content_copy"
                 flat
@@ -37,11 +44,7 @@
               />
             </td>
             <td class="text-right">{{ wallet.trx.toLocaleString() }}</td>
-            <td class="text-right">
-              {{ wallet.staked_for_energy.toLocaleString() }}/{{
-                wallet.staked_for_bandwidth.toLocaleString()
-              }}
-            </td>
+
             <td class="text-right">{{ wallet.balance.toLocaleString() }}</td>
             <td class="text-right">
               <div>
@@ -95,6 +98,42 @@
                 v-else
               />
             </td>
+            <td class="text-right">
+              <q-btn
+                flat
+                :label="wallet.staked_for_energy.toLocaleString()"
+                @click="unstake(wallet, 'ENERGY')"
+                :disable="wallet.staked_for_energy < 1"
+              />
+              /
+              <q-btn
+                flat
+                :label="wallet.staked_for_bandwidth.toLocaleString()"
+                @click="unstake(wallet, 'BANDWIDTH')"
+                :disable="wallet.staked_for_bandwidth < 1"
+              />
+            </td>
+            <td class="text-right">
+              <q-btn
+                flat
+                :label="
+                  (getUnstakedAmount(wallet, 'ENERGY') ?? 0).toLocaleString()
+                "
+                :color="getWithdrawableUnstake(wallet) ? 'positive' : ''"
+                :disable="!getWithdrawableUnstake(wallet)"
+                @click="withdrawUnstakedAmount(wallet.id)"
+              />
+              /
+              <q-btn
+                flat
+                :label="
+                  (getUnstakedAmount(wallet, 'BANDWIDTH') ?? 0).toLocaleString()
+                "
+                :color="getWithdrawableUnstake(wallet) ? 'positive' : ''"
+                :disable="!getWithdrawableUnstake(wallet)"
+                @click="withdrawUnstakedAmount(wallet.id)"
+              />
+            </td>
           </tr>
         </tbody>
       </q-markup-table>
@@ -137,6 +176,34 @@ const copyAddress = (address) => {
     });
 };
 
+const withdrawUnstakedAmount = (walletId) => {
+  dialog({
+    title: "Confirm",
+    message: `Do you want to withdraw all the available unstake amount?`,
+    cancel: true,
+    noBackdropDismiss: true,
+  }).onOk(() => {
+    loading.show();
+    api({
+      method: "POST",
+      url: `/wallets/${walletId}/withdraw-unstake`,
+    })
+      .then(({ data }) => {
+        const index = pagination.value.data.findIndex(
+          (e) => e.id == data.wallet.id
+        );
+        pagination.value.data.splice(index, 1, data.wallet);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      })
+      .finally(loading.hide);
+  });
+};
+
 const stake = (wallet, type) => {
   dialog({
     title: "Amount",
@@ -169,7 +236,66 @@ const stake = (wallet, type) => {
       })
       .catch((error) => {
         notify({
-          message: error.message,
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      })
+      .finally(loading.hide);
+  });
+};
+
+const getUnstakedAmount = (wallet, type) => {
+  return wallet.unstakes?.reduce(
+    (carry, unstake) => (unstake.type == type ? unstake.amount : 0) + carry,
+    0
+  );
+};
+
+const getWithdrawableUnstake = (wallet) => {
+  return wallet.unstakes?.find(
+    (e) => Date.now() + 14 * 24 * 60 * 60 * 1000 > Date.parse(e.withdrawable_at)
+  );
+};
+
+const unstake = (wallet, type) => {
+  dialog({
+    title: "Unstake " + type,
+    message: "Enter the amount of TRX you want to unstake",
+    noBackdropDismiss: true,
+    cancel: true,
+    prompt: {
+      model: "",
+      autofocus: true,
+      type: "number",
+      inputmode: "numeric",
+      pattern: "[0-9]*",
+      isValid: (val) =>
+        val != "" &&
+        val > 0 &&
+        val <=
+          (type == "ENERGY"
+            ? wallet.staked_for_energy
+            : wallet.staked_for_bandwidth),
+    },
+  }).onOk((amount) => {
+    loading.show();
+    api({
+      method: "POST",
+      url: `/wallets/${wallet.id}/unstake`,
+      data: {
+        amount,
+        type,
+      },
+    })
+      .then(({ data }) => {
+        const index = pagination.value.data.findIndex(
+          (e) => e.id == data.wallet.id
+        );
+        pagination.value.data.splice(index, 1, data.wallet);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
           type: "negative",
         });
       })
@@ -191,7 +317,7 @@ const refreshBalance = (walletId) => {
     })
     .catch((error) => {
       notify({
-        message: error.message,
+        message: error?.response?.data?.message ?? error.message,
         type: "negative",
       });
     })
@@ -217,7 +343,7 @@ const activateWallet = (walletId) => {
       })
       .catch((error) => {
         notify({
-          message: error.message,
+          message: error?.response?.data?.message ?? error.message,
           type: "negative",
         });
       });
@@ -241,7 +367,7 @@ const addWallet = () => {
       .catch((error) => {
         notify({
           type: "negative",
-          message: error.message,
+          message: error?.response?.data?.message ?? error.message,
         });
       });
   });

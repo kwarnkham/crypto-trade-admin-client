@@ -20,9 +20,11 @@ const api = (options) => {
     axiosInstance(options).then(response => {
       resolve(response)
     }).catch(error => {
-      if ([401, 403].includes(error?.response?.status)) LocalStorage.remove('token')
-      axiosInstance.defaults.headers.common["Authorization"] =
-        undefined
+      if ([401, 403].includes(error?.response?.status)) {
+        LocalStorage.remove('token')
+        axiosInstance.defaults.headers.common["Authorization"] =
+          undefined
+      }
       reject(error)
     })
   })
