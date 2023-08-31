@@ -97,6 +97,14 @@
                 @click="refreshBalance(wallet.id)"
                 v-else
               />
+              <q-btn
+                no-caps
+                dense
+                flat
+                icon="cancel_schedule_send"
+                @click="cancelUnstake(wallet.id)"
+                :disable="wallet.unstakes.length == 0"
+              />
             </td>
             <td class="text-right">
               <q-btn
@@ -176,6 +184,34 @@ const copyAddress = (address) => {
     });
 };
 
+const cancelUnstake = (walletId) => {
+  dialog({
+    title: "Confirm",
+    message: `Do you want to cancel all the unstake?`,
+    cancel: true,
+    noBackdropDismiss: true,
+  }).onOk(() => {
+    loading.show();
+    api({
+      method: "POST",
+      url: `/wallets/${walletId}/cancel-unstake`,
+    })
+      .then(({ data }) => {
+        const index = pagination.value.data.findIndex(
+          (e) => e.id == data.wallet.id
+        );
+        pagination.value.data.splice(index, 1, data.wallet);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      })
+      .finally(loading.hide);
+  });
+};
+
 const withdrawUnstakedAmount = (walletId) => {
   dialog({
     title: "Confirm",
@@ -253,7 +289,7 @@ const getUnstakedAmount = (wallet, type) => {
 
 const getWithdrawableUnstake = (wallet) => {
   return wallet.unstakes?.find(
-    (e) => Date.now() + 14 * 24 * 60 * 60 * 1000 > Date.parse(e.withdrawable_at)
+    (e) => Date.now() > Date.parse(e.withdrawable_at)
   );
 };
 
