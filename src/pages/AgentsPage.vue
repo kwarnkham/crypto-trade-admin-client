@@ -28,7 +28,10 @@
             </td>
             <td class="text-right">{{ agent.ip }}</td>
 
-            <td class="text-right">
+            <td
+              class="text-right"
+              :class="[agent.status == 1 ? 'text-positive' : 'text-negative']"
+            >
               {{ agent.status == 1 ? "Normal" : "Restricted" }}
             </td>
 
@@ -36,7 +39,13 @@
               {{ agent.remark }}
             </td>
             <td class="text-right">
-              <q-btn dense flat icon="block" no-caps />
+              <q-btn
+                dense
+                flat
+                :icon="agent.status == 1 ? 'block' : 'done'"
+                no-caps
+                @click="toggleStatus(agent)"
+              />
               <q-btn dense flat icon="key" no-caps />
             </td>
           </tr>
@@ -57,7 +66,34 @@
 </template>
 
 <script setup>
+import { useQuasar } from "quasar";
+import { api } from "src/boot/axios";
 import usePagination from "src/composables/pagination";
 
 const { pagination, current, max } = usePagination("agents");
+const { dialog, notify } = useQuasar();
+
+const toggleStatus = ({ id, status, name }) => {
+  dialog({
+    title: "Confirm",
+    message: `Do you want to ${
+      status == 1 ? "restrict" : "unrestrict"
+    } the agent, ${name}?`,
+  }).onOk(() => {
+    api({
+      method: "POST",
+      url: `/agents/${id}/toggle-status`,
+    })
+      .then(({ data }) => {
+        const index = pagination.value.data.findIndex((e) => e.id == id);
+        pagination.value.data.splice(index, 1, data.agent);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      });
+  });
+};
 </script>
