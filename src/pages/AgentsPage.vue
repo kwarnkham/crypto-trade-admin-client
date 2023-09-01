@@ -11,7 +11,7 @@
           <tr>
             <th class="text-left">#</th>
             <th class="text-left">Name</th>
-            <th class="text-right">IP</th>
+            <th class="text-right">Allowed IP</th>
             <th class="text-right">Status</th>
             <th class="text-right">Remark</th>
             <th class="text-right">Actions</th>
@@ -46,7 +46,7 @@
                 no-caps
                 @click="toggleStatus(agent)"
               />
-              <q-btn dense flat icon="key" no-caps />
+              <q-btn dense flat icon="key" no-caps @click="resetKey(agent)" />
             </td>
           </tr>
         </tbody>
@@ -66,7 +66,7 @@
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
+import { copyToClipboard, useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import usePagination from "src/composables/pagination";
 
@@ -79,6 +79,8 @@ const toggleStatus = ({ id, status, name }) => {
     message: `Do you want to ${
       status == 1 ? "restrict" : "unrestrict"
     } the agent, ${name}?`,
+    noBackdropDismiss: true,
+    cancel: true,
   }).onOk(() => {
     api({
       method: "POST",
@@ -87,6 +89,52 @@ const toggleStatus = ({ id, status, name }) => {
       .then(({ data }) => {
         const index = pagination.value.data.findIndex((e) => e.id == id);
         pagination.value.data.splice(index, 1, data.agent);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      });
+  });
+};
+
+const resetKey = ({ id, name }) => {
+  dialog({
+    title: "Confirm",
+    message: `Do you want to reset the key of agent, ${name}`,
+    noBackdropDismiss: true,
+    cancel: true,
+  }).onOk(() => {
+    api({
+      method: "POST",
+      url: `/agents/${id}/reset-key`,
+    })
+      .then(({ data }) => {
+        dialog({
+          title: "The current key is",
+          message: `<div class='text-overline bg-grey text-grey-4 text-center rounded-borders' style='font-size:7px;'>${data.key}</div>`,
+          html: true,
+          noBackdropDismiss: true,
+          on: {
+            icon: "content_copy",
+            color: "info",
+          },
+        }).onOk(() => {
+          copyToClipboard(data.key)
+            .then(() => {
+              notify({
+                message: "Key is copied to clipboard",
+                type: "info",
+              });
+            })
+            .catch((error) => {
+              notify({
+                message: error?.response?.data?.message ?? error.message,
+                type: "negative",
+              });
+            });
+        });
       })
       .catch((error) => {
         notify({
