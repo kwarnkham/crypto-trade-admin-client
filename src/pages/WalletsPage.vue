@@ -89,22 +89,23 @@
                 @click="activateWallet(wallet.id)"
                 v-if="!wallet.activated_at"
               />
-              <q-btn
-                no-caps
-                dense
-                flat
-                icon="autorenew"
-                @click="refreshBalance(wallet.id)"
-                v-else
-              />
-              <q-btn
-                no-caps
-                dense
-                flat
-                icon="cancel_schedule_send"
-                @click="cancelUnstake(wallet.id)"
-                :disable="wallet.unstakes.length == 0"
-              />
+              <template v-else>
+                <q-btn
+                  no-caps
+                  dense
+                  flat
+                  icon="autorenew"
+                  @click="refreshBalance(wallet.id)"
+                />
+                <q-btn
+                  no-caps
+                  dense
+                  flat
+                  icon="cancel_schedule_send"
+                  @click="cancelUnstake(wallet.id)"
+                  :disable="wallet.unstakes.length == 0"
+                />
+              </template>
             </td>
             <td class="text-right">
               <q-btn

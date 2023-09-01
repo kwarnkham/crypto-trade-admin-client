@@ -91,6 +91,14 @@ const links = [
     },
   },
   {
+    title: "Agents",
+    icon: "group",
+    name: "agents",
+    action: () => {
+      router.push({ name: "agents" });
+    },
+  },
+  {
     title: "Wallets",
     icon: "home",
     name: "wallets",
