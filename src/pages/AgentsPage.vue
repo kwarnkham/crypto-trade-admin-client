@@ -1,5 +1,8 @@
 <template>
   <q-page padding>
+    <div class="text-right q-mb-sm" @click="addAgent">
+      <q-btn icon="add" />
+    </div>
     <template v-if="pagination?.data?.length">
       <q-markup-table
         separator="horizontal"
@@ -74,6 +77,63 @@ import usePagination from "src/composables/pagination";
 const { pagination, current, max } = usePagination("agents");
 const { dialog, notify } = useQuasar();
 
+const addAgent = () => {
+  dialog({
+    title: "Add a new agent",
+    noBackdropDismiss: true,
+    prompt: {
+      model: "",
+      isValid: (value) => value != "",
+    },
+    cancel: true,
+  }).onOk((value) => {
+    api({
+      method: "POST",
+      url: `/agents`,
+      data: {
+        name: value,
+      },
+    })
+      .then(({ data }) => {
+        pagination.value.data.push(data.agent);
+        showKey(data.key);
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      });
+  });
+};
+
+const showKey = (key) => {
+  dialog({
+    title: "The current key is",
+    message: `<div class='text-overline bg-grey text-grey-4 text-center rounded-borders' style='font-size:7px;'>${key}</div>`,
+    html: true,
+    noBackdropDismiss: true,
+    on: {
+      icon: "content_copy",
+      color: "info",
+    },
+  }).onOk(() => {
+    copyToClipboard(key)
+      .then(() => {
+        notify({
+          message: "Key is copied to clipboard",
+          type: "info",
+        });
+      })
+      .catch((error) => {
+        notify({
+          message: error?.response?.data?.message ?? error.message,
+          type: "negative",
+        });
+      });
+  });
+};
+
 const toggleStatus = ({ id, status, name }) => {
   dialog({
     title: "Confirm",
@@ -100,7 +160,7 @@ const toggleStatus = ({ id, status, name }) => {
   });
 };
 
-const edit = ({ id, ip, name }) => {
+const edit = (agent) => {
   dialog({
     title: "Edit",
     noBackdropDismiss: true,
@@ -110,6 +170,7 @@ const edit = ({ id, ip, name }) => {
       items: [
         { label: "Name", value: "name" },
         { label: "IP", value: "ip" },
+        { label: "Remark", value: "remark" },
       ],
     },
     cancel: true,
@@ -118,21 +179,24 @@ const edit = ({ id, ip, name }) => {
       title: "Edit " + field,
       noBackdropDismiss: true,
       prompt: {
-        model: field == "name" ? name : ip,
-        isValid: (value) => value != "",
+        model: agent[field],
+        isValid: (value) => value != "" || key == "remark",
       },
       cancel: true,
     }).onOk((value) => {
       api({
         method: "PUT",
-        url: `/agents/${id}`,
+        url: `/agents/${agent.id}`,
         data: {
-          name: field == "name" ? value : name,
-          ip: field == "ip" ? value : ip,
+          name: field == "name" ? value : agent.name,
+          ip: field == "ip" ? value : agent.ip,
+          remark: field == "remark" ? value : agent.remark,
         },
       })
         .then(({ data }) => {
-          const index = pagination.value.data.findIndex((e) => e.id == id);
+          const index = pagination.value.data.findIndex(
+            (e) => e.id == data.agent.id
+          );
           pagination.value.data.splice(index, 1, data.agent);
         })
         .catch((error) => {
@@ -157,30 +221,7 @@ const resetKey = ({ id, name }) => {
       url: `/agents/${id}/reset-key`,
     })
       .then(({ data }) => {
-        dialog({
-          title: "The current key is",
-          message: `<div class='text-overline bg-grey text-grey-4 text-center rounded-borders' style='font-size:7px;'>${data.key}</div>`,
-          html: true,
-          noBackdropDismiss: true,
-          on: {
-            icon: "content_copy",
-            color: "info",
-          },
-        }).onOk(() => {
-          copyToClipboard(data.key)
-            .then(() => {
-              notify({
-                message: "Key is copied to clipboard",
-                type: "info",
-              });
-            })
-            .catch((error) => {
-              notify({
-                message: error?.response?.data?.message ?? error.message,
-                type: "negative",
-              });
-            });
-        });
+        showKey(data.key);
       })
       .catch((error) => {
         notify({
