@@ -47,6 +47,7 @@
                 @click="toggleStatus(agent)"
               />
               <q-btn dense flat icon="key" no-caps @click="resetKey(agent)" />
+              <q-btn dense flat icon="edit" no-caps @click="edit(agent)" />
             </td>
           </tr>
         </tbody>
@@ -96,6 +97,51 @@ const toggleStatus = ({ id, status, name }) => {
           type: "negative",
         });
       });
+  });
+};
+
+const edit = ({ id, ip, name }) => {
+  dialog({
+    title: "Edit",
+    noBackdropDismiss: true,
+    options: {
+      type: "radio",
+      model: "name",
+      items: [
+        { label: "Name", value: "name" },
+        { label: "IP", value: "ip" },
+      ],
+    },
+    cancel: true,
+  }).onOk((field) => {
+    dialog({
+      title: "Edit " + field,
+      noBackdropDismiss: true,
+      prompt: {
+        model: field == "name" ? name : ip,
+        isValid: (value) => value != "",
+      },
+      cancel: true,
+    }).onOk((value) => {
+      api({
+        method: "PUT",
+        url: `/agents/${id}`,
+        data: {
+          name: field == "name" ? value : name,
+          ip: field == "ip" ? value : ip,
+        },
+      })
+        .then(({ data }) => {
+          const index = pagination.value.data.findIndex((e) => e.id == id);
+          pagination.value.data.splice(index, 1, data.agent);
+        })
+        .catch((error) => {
+          notify({
+            message: error?.response?.data?.message ?? error.message,
+            type: "negative",
+          });
+        });
+    });
   });
 };
 
