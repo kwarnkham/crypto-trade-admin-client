@@ -99,6 +99,14 @@ const links = [
     },
   },
   {
+    title: "Deposits",
+    icon: "account_balance_wallet",
+    name: "deposits",
+    action: () => {
+      router.push({ name: "deposits" });
+    },
+  },
+  {
     title: "Wallets",
     icon: "home",
     name: "wallets",
