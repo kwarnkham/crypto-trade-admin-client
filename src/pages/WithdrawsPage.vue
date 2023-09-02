@@ -13,40 +13,47 @@
             <th class="text-left">Amount</th>
             <th class="text-right">Agent</th>
             <th class="text-right">User ( Balance )</th>
-            <th class="text-right">Wallet</th>
+            <th class="text-right">From</th>
+            <th class="text-right">To</th>
+            <th class="text-right">Fee</th>
             <th class="text-right">Status</th>
             <th class="text-right">Attempts</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(deposit, key) in pagination.data" :key="deposit.id">
+          <tr v-for="(withdraw, key) in pagination.data" :key="withdraw.id">
             <td class="text-left">{{ key + 1 }}</td>
             <td class="text-left">
-              {{ deposit.amount.toLocaleString() }}
+              {{ withdraw.amount.toLocaleString() }}
             </td>
-            <td class="text-right">{{ deposit.user.agent.name }}</td>
+            <td class="text-right">{{ withdraw.user.agent.name }}</td>
             <td class="text-right">
-              {{ deposit.user.name }} (
-              {{ deposit.user.balance.toLocaleString() }} )
+              {{ withdraw.user.name }} (
+              {{ withdraw.user.balance.toLocaleString() }} )
             </td>
 
             <td class="text-right">
-              {{ deposit.wallet.base58_check }}
+              {{ withdraw.wallet?.base58_check }}
+            </td>
+            <td class="text-right">
+              {{ withdraw.to }}
+            </td>
+            <td class="text-right">
+              {{ withdraw.fee }}
             </td>
 
             <td
               class="text-right"
               :class="{
-                'text-positive': deposit.status == 3,
-                'text-primary': deposit.status == 2,
-                'text-negative': deposit.status == 4,
-                'text-warning': deposit.status == 5,
+                'text-positive': withdraw.status == 3,
+                'text-primary': withdraw.status == 2,
+                'text-negative': withdraw.status == 4,
               }"
             >
-              {{ getDepositStatusText(deposit.status) }}
+              {{ getWithdrawStatusText(withdraw.status) }}
             </td>
             <td class="text-right">
-              {{ deposit.attempts }}
+              {{ withdraw.attempts }}
             </td>
           </tr>
         </tbody>
@@ -61,17 +68,16 @@
         <q-pagination v-model="current" :max="max" input />
       </div>
     </template>
-    <div v-else class="text-center">No Deposits yet</div>
+    <div v-else class="text-center">No Withdraws yet</div>
   </q-page>
 </template>
 
 <script setup>
 import usePagination from "src/composables/pagination";
 
-const { pagination, max, current } = usePagination("deposits");
-// const { dialog, notify } = useQuasar();
+const { pagination, max, current } = usePagination("withdraws");
 
-const getDepositStatusText = (status) => {
+const getWithdrawStatusText = (status) => {
   switch (status) {
     case 1:
       return "Pending";
@@ -81,35 +87,8 @@ const getDepositStatusText = (status) => {
       return "Completed";
     case 4:
       return "Canceled";
-    case 5:
-      return "Expired";
     default:
       return "Unknown";
   }
 };
-
-// const cancel = ({ id }) => {
-//   dialog({
-//     title: "Cancel the deposit?",
-//     noBackdropDismiss: true,
-//     cancel: true,
-//   }).onOk(() => {
-//     api({
-//       method: "POST",
-//       url: `/deposits/${id}/cancel`,
-//     })
-//       .then(({ data }) => {
-//         const index = pagination.value.data.findIndex(
-//           (e) => e.id == data.deposit.id
-//         );
-//         pagination.value.data.splice(index, 1, data.deposit);
-//       })
-//       .catch((error) => {
-//         notify({
-//           message: error?.response?.data?.message ?? error.message,
-//           type: "negative",
-//         });
-//       });
-//   });
-// };
 </script>

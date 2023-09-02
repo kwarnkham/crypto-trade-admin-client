@@ -8,6 +8,7 @@ const routes = [
       { path: '/change-password', component: () => import('pages/ChangePassword.vue'), name: 'change-password', meta: { requiresAuth: true } },
       { path: '/wallets', component: () => import('pages/WalletsPage.vue'), name: 'wallets', meta: { requiresAuth: true } },
       { path: '/deposits', component: () => import('pages/DepositsPage.vue'), name: 'deposits', meta: { requiresAuth: true } },
+      { path: '/withdraws', component: () => import('pages/WithdrawsPage.vue'), name: 'withdraws', meta: { requiresAuth: true } },
       { path: '/agents', component: () => import('pages/AgentsPage.vue'), name: 'agents', meta: { requiresAuth: true } },
       { path: '/login', component: () => import('pages/LoginPage.vue'), name: 'login', meta: { guest: true } },
     ]

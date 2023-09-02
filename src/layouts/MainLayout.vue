@@ -107,6 +107,14 @@ const links = [
     },
   },
   {
+    title: "Withdraws",
+    icon: "wallet",
+    name: "withdraws",
+    action: () => {
+      router.push({ name: "withdraws" });
+    },
+  },
+  {
     title: "Wallets",
     icon: "home",
     name: "wallets",

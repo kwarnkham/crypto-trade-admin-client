@@ -52,12 +52,7 @@
                   :disable="wallet.trx < 2"
                 />
                 :
-                {{
-                  (wallet.resource?.freeNetLimit ?? 0) -
-                  (wallet.resource?.freeNetUsed ?? 0) -
-                  (wallet.resource?.NetUsed ?? 0) +
-                  (wallet.resource?.NetLimit ?? 0)
-                }}
+                {{ wallet.bandwidth }}
               </div>
               <div>
                 <q-btn
@@ -69,10 +64,7 @@
                   :disable="wallet.trx < 2"
                 />
                 :
-                {{
-                  (wallet.resource?.EnergyLimit ?? 0) -
-                  (wallet.resource?.EnergyUsed ?? 0)
-                }}
+                {{ wallet.energy }}
               </div>
             </td>
             <td class="text-right">
