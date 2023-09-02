@@ -12,11 +12,10 @@
             <th class="text-left">#</th>
             <th class="text-left">Amount</th>
             <th class="text-right">Agent</th>
-            <th class="text-right">User</th>
+            <th class="text-right">User(Balance)</th>
             <th class="text-right">Wallet</th>
             <th class="text-right">Status</th>
             <th class="text-right">Attempts</th>
-            <th class="text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -26,7 +25,10 @@
               {{ deposit.amount.toLocaleString() }}
             </td>
             <td class="text-right">{{ deposit.user.agent.name }}</td>
-            <td class="text-right">{{ deposit.user.name }}</td>
+            <td class="text-right">
+              {{ deposit.user.name }} (
+              {{ deposit.user.balance.toLocaleString() }} )
+            </td>
 
             <td class="text-right">
               {{ deposit.wallet.base58_check }}
@@ -46,16 +48,6 @@
             <td class="text-right">
               {{ deposit.attempts }}
             </td>
-            <td class="text-right">
-              <q-btn
-                dense
-                flat
-                icon="cancel"
-                no-caps
-                v-if="deposit.status == 1"
-                @click="cancel(deposit)"
-              />
-            </td>
           </tr>
         </tbody>
       </q-markup-table>
@@ -74,12 +66,10 @@
 </template>
 
 <script setup>
-import { useQuasar } from "quasar";
-import { api } from "src/boot/axios";
 import usePagination from "src/composables/pagination";
 
 const { pagination, max, current } = usePagination("deposits");
-const { dialog, notify } = useQuasar();
+// const { dialog, notify } = useQuasar();
 
 const getDepositStatusText = (status) => {
   switch (status) {
@@ -97,28 +87,29 @@ const getDepositStatusText = (status) => {
       return "Unknown";
   }
 };
-const cancel = ({ id }) => {
-  dialog({
-    title: "Cancel the deposit?",
-    noBackdropDismiss: true,
-    cancel: true,
-  }).onOk(() => {
-    api({
-      method: "POST",
-      url: `/deposits/${id}/cancel`,
-    })
-      .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.deposit.id
-        );
-        pagination.value.data.splice(index, 1, data.deposit);
-      })
-      .catch((error) => {
-        notify({
-          message: error?.response?.data?.message ?? error.message,
-          type: "negative",
-        });
-      });
-  });
-};
+
+// const cancel = ({ id }) => {
+//   dialog({
+//     title: "Cancel the deposit?",
+//     noBackdropDismiss: true,
+//     cancel: true,
+//   }).onOk(() => {
+//     api({
+//       method: "POST",
+//       url: `/deposits/${id}/cancel`,
+//     })
+//       .then(({ data }) => {
+//         const index = pagination.value.data.findIndex(
+//           (e) => e.id == data.deposit.id
+//         );
+//         pagination.value.data.splice(index, 1, data.deposit);
+//       })
+//       .catch((error) => {
+//         notify({
+//           message: error?.response?.data?.message ?? error.message,
+//           type: "negative",
+//         });
+//       });
+//   });
+// };
 </script>

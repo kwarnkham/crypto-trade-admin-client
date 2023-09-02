@@ -1,15 +1,10 @@
 <template>
-  <q-page padding class="column" :style-fn="vhPage">
+  <q-page padding>
     <div class="text-h5 row items-center justify-center">
       Wallets <q-btn icon="add" flat color="primary" @click="addWallet" />
     </div>
     <template v-if="pagination?.data?.length">
-      <q-markup-table
-        separator="horizontal"
-        flat
-        bordered
-        class="col overflow-auto"
-      >
+      <q-markup-table separator="horizontal" flat bordered>
         <thead>
           <tr>
             <th class="text-left">#</th>
@@ -410,7 +405,7 @@ const addWallet = () => {
   });
 };
 
-const vhPage = (offset, height) => ({
-  height: height - offset + "px",
-});
+// const vhPage = (offset, height) => ({
+//   height: height - offset + "px",
+// });
 </script>
