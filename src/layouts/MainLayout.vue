@@ -108,15 +108,23 @@ const links = [
   },
   {
     title: "Withdraws",
-    icon: "wallet",
+    icon: "account_balance",
     name: "withdraws",
     action: () => {
       router.push({ name: "withdraws" });
     },
   },
   {
+    title: "Trc-20 Transactions",
+    icon: "receipt_long",
+    name: "trc20-transactions",
+    action: () => {
+      router.push({ name: "trc20-transactions" });
+    },
+  },
+  {
     title: "Wallets",
-    icon: "home",
+    icon: "wallet",
     name: "wallets",
     action: () => {
       router.push({ name: "wallets" });
