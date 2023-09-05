@@ -100,7 +100,7 @@ const links = [
   },
   {
     title: "Deposits",
-    icon: "account_balance_wallet",
+    icon: "monetization_on",
     name: "deposits",
     action: () => {
       router.push({ name: "deposits" });
@@ -115,6 +115,14 @@ const links = [
     },
   },
   {
+    title: "Transfers",
+    icon: "currency_exchange",
+    name: "transfers",
+    action: () => {
+      router.push({ name: "transfers" });
+    },
+  },
+  {
     title: "Trc-20 Transactions",
     icon: "receipt_long",
     name: "trc20-transactions",
@@ -124,7 +132,7 @@ const links = [
   },
   {
     title: "Wallets",
-    icon: "wallet",
+    icon: "account_balance_wallet",
     name: "wallets",
     action: () => {
       router.push({ name: "wallets" });
