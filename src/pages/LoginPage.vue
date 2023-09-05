@@ -50,7 +50,7 @@ const submit = () => {
         "Bearer " + data.token;
       setUser(data.admin);
       router.replace({
-        name: "index",
+        name: "agents",
       });
     })
     .catch((e) => {

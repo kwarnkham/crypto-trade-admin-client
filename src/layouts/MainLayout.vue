@@ -19,7 +19,7 @@
           icon="keyboard_arrow_left"
           aria-label="Back"
           @click="$router.go(-1)"
-          v-if="!['index', 'login'].includes($route.name)"
+          v-if="!['login'].includes($route.name)"
         />
 
         <q-toolbar-title> Crypto Trade Admin </q-toolbar-title>
@@ -82,14 +82,6 @@ const leftDrawerOpen = ref(false);
 const userStore = useUserStore();
 
 const links = [
-  {
-    title: "Home",
-    icon: "home",
-    name: "index",
-    action: () => {
-      router.push({ name: "index" });
-    },
-  },
   {
     title: "Agents",
     icon: "group",
