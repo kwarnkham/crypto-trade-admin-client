@@ -11,7 +11,7 @@ let echo = new Echo({
   wsHost: process.env.PUSHER_HOST,
   wsPort: process.env.PUSHER_PORT,
   wssPort: process.env.PUSHER_PORT,
-  forceTLS: false,
+  forceTLS: process.env.PUSHER_SCHEME == 'https',
   encrypted: true,
   disableStats: true,
   enabledTransports: ['ws', 'wss'],
