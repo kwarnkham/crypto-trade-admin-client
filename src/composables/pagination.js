@@ -1,11 +1,13 @@
 import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "src/boot/axios";
+import { useQuasar } from "quasar";
 
 export default function usePagination (url, params) {
   const route = useRoute();
   const router = useRouter();
   const pagination = ref(null);
+  const { notify } = useQuasar()
   const total = ref(0)
   const current = ref(Number(route.query.page ?? 1) ?? 1);
   const max = computed(
@@ -52,6 +54,11 @@ export default function usePagination (url, params) {
       pagination.value = response.data;
       current.value = response.data.current_page;
       total.value = response.data.total
+    }).catch(e => {
+      notify({
+        message: e.response?.data?.message ?? e.message,
+        type: "negative"
+      })
     });
   }
 

@@ -150,7 +150,9 @@
 <script setup>
 import { copyToClipboard, useQuasar } from "quasar";
 import { api } from "src/boot/axios";
+import { echo } from "src/boot/init";
 import usePagination from "src/composables/pagination";
+import { onBeforeUnmount, onMounted } from "vue";
 
 const { pagination, current, max } = usePagination("/wallets");
 
@@ -172,6 +174,11 @@ const copyAddress = (address) => {
     });
 };
 
+const updateWallet = (wallet) => {
+  const index = pagination.value.data.findIndex((e) => e.id == wallet.id);
+  pagination.value.data.splice(index, 1, wallet);
+};
+
 const cancelUnstake = (walletId) => {
   dialog({
     title: "Confirm",
@@ -185,10 +192,7 @@ const cancelUnstake = (walletId) => {
       url: `/wallets/${walletId}/cancel-unstake`,
     })
       .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.wallet.id
-        );
-        pagination.value.data.splice(index, 1, data.wallet);
+        updateWallet(data.wallet);
       })
       .catch((error) => {
         notify({
@@ -213,10 +217,7 @@ const withdrawUnstakedAmount = (walletId) => {
       url: `/wallets/${walletId}/withdraw-unstake`,
     })
       .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.wallet.id
-        );
-        pagination.value.data.splice(index, 1, data.wallet);
+        updateWallet(data.wallet);
       })
       .catch((error) => {
         notify({
@@ -253,10 +254,7 @@ const stake = (wallet, type) => {
       },
     })
       .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.wallet.id
-        );
-        pagination.value.data.splice(index, 1, data.wallet);
+        updateWallet(data.wallet);
       })
       .catch((error) => {
         notify({
@@ -312,10 +310,7 @@ const unstake = (wallet, type) => {
       },
     })
       .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.wallet.id
-        );
-        pagination.value.data.splice(index, 1, data.wallet);
+        updateWallet(data.wallet);
       })
       .catch((error) => {
         notify({
@@ -334,10 +329,7 @@ const refreshBalance = (walletId) => {
     url: `/wallets/${walletId}`,
   })
     .then(({ data }) => {
-      const index = pagination.value.data.findIndex(
-        (e) => e.id == data.wallet.id
-      );
-      pagination.value.data.splice(index, 1, data.wallet);
+      updateWallet(data.wallet);
     })
     .catch((error) => {
       notify({
@@ -360,10 +352,7 @@ const activateWallet = (walletId) => {
       url: `/wallets/${walletId}/activate`,
     })
       .then(({ data }) => {
-        const index = pagination.value.data.findIndex(
-          (e) => e.id == data.wallet.id
-        );
-        pagination.value.data.splice(index, 1, data.wallet);
+        updateWallet(data.wallet);
       })
       .catch((error) => {
         notify({
@@ -397,7 +386,13 @@ const addWallet = () => {
   });
 };
 
-// const vhPage = (offset, height) => ({
-//   height: height - offset + "px",
-// });
+onMounted(() => {
+  echo.private(`wallets`).listen("WalletUpdated", ({ wallet }) => {
+    updateWallet(wallet);
+  });
+});
+
+onBeforeUnmount(() => {
+  echo.leave("wallets");
+});
 </script>
