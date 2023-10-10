@@ -5,17 +5,18 @@ import { api } from 'src/boot/axios';
 
 
 window.Pusher = Pusher;
+
 let echo = new Echo({
   broadcaster: 'pusher',
   key: process.env.PUSHER_APP_KEY,
-  wsHost: process.env.PUSHER_HOST,
-  wsPort: process.env.PUSHER_PORT,
-  wssPort: process.env.PUSHER_PORT,
+  // wsHost: process.env.PUSHER_HOST || undefined,
+  // wsPort: process.env.PUSHER_PORT || undefined,
+  // wssPort: process.env.PUSHER_PORT || undefined,
   forceTLS: process.env.PUSHER_SCHEME == 'https',
   encrypted: true,
   disableStats: true,
   enabledTransports: ['ws', 'wss'],
-  cluster: 'mt1',
+  cluster: process.env.PUSHER_APP_CLUSTER,
   authorizer: (channel, options) => {
     return {
       authorize: (socketId, callback) => {

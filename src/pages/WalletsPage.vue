@@ -90,7 +90,7 @@
                   flat
                   icon="cancel_schedule_send"
                   @click="cancelUnstake(wallet.id)"
-                  :disable="wallet.unstakes.length == 0"
+                  :disable="!wallet.unstakes?.length"
                 />
               </template>
             </td>
