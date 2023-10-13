@@ -180,7 +180,7 @@ const edit = (agent) => {
       noBackdropDismiss: true,
       prompt: {
         model: agent[field],
-        isValid: (value) => value != "" || key == "remark",
+        isValid: (value) => value != "" || field == "remark",
       },
       cancel: true,
     }).onOk((value) => {
