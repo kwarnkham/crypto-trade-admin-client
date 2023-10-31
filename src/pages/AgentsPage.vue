@@ -16,6 +16,8 @@
             <th class="text-left">Name</th>
             <th class="text-right">Allowed IP</th>
             <th class="text-right">Status</th>
+            <th class="text-right">Deposit Callback URL</th>
+            <th class="text-right">Withdraw Callback URL</th>
             <th class="text-right">Remark</th>
             <th class="text-right">Actions</th>
           </tr>
@@ -36,6 +38,14 @@
               :class="[agent.status == 1 ? 'text-positive' : 'text-negative']"
             >
               {{ agent.status == 1 ? "Normal" : "Restricted" }}
+            </td>
+
+            <td class="text-right">
+              {{ agent.deposit_callback }}
+            </td>
+
+            <td class="text-right">
+              {{ agent.withdraw_callback }}
             </td>
 
             <td class="text-right">
@@ -170,6 +180,7 @@ const edit = (agent) => {
       items: [
         { label: "Name", value: "name" },
         { label: "IP", value: "ip" },
+        { label: "AES key", value: "aes_key" },
         { label: "Remark", value: "remark" },
       ],
     },
@@ -191,6 +202,7 @@ const edit = (agent) => {
           name: field == "name" ? value : agent.name,
           ip: field == "ip" ? value : agent.ip,
           remark: field == "remark" ? value : agent.remark,
+          aes_key: field == "aes_key" ? value : undefined,
         },
       })
         .then(({ data }) => {
