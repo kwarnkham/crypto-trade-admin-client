@@ -38,9 +38,9 @@
                 @click="copyAddress(wallet.base58_check)"
               />
             </td>
-            <td class="text-right">{{ wallet.trx.toLocaleString() }}</td>
+            <td class="text-right">{{ wallet.trx?.toLocaleString() }}</td>
 
-            <td class="text-right">{{ wallet.balance.toLocaleString() }}</td>
+            <td class="text-right">{{ wallet.balance?.toLocaleString() }}</td>
             <td class="text-right">
               <div>
                 <q-btn
@@ -97,14 +97,14 @@
             <td class="text-right">
               <q-btn
                 flat
-                :label="wallet.staked_for_energy.toLocaleString()"
+                :label="wallet.staked_for_energy?.toLocaleString()"
                 @click="unstake(wallet, 'ENERGY')"
                 :disable="wallet.staked_for_energy < 1"
               />
               /
               <q-btn
                 flat
-                :label="wallet.staked_for_bandwidth.toLocaleString()"
+                :label="wallet.staked_for_bandwidth?.toLocaleString()"
                 @click="unstake(wallet, 'BANDWIDTH')"
                 :disable="wallet.staked_for_bandwidth < 1"
               />
