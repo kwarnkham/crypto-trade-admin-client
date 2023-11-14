@@ -10,9 +10,7 @@ export default function usePagination (url, params) {
   const { notify } = useQuasar()
   const total = ref(0)
   const current = ref(Number(route.query.page ?? 1) ?? 1);
-  const max = computed(
-    () => Math.ceil(pagination.value?.total / pagination.value?.per_page) || 1
-  );
+  const max = ref(0);
 
   const fetcher = (params) => {
     if (!params?.per_page) params.per_page = 10;
@@ -33,7 +31,8 @@ export default function usePagination (url, params) {
     const query = JSON.parse(JSON.stringify(route.query))
     fetcher(query).then((response) => {
       pagination.value = response.data;
-      total.value = response.data.total
+      total.value = response.data.total;
+      max.value = response.data.last_page;
     });
   };
 
@@ -53,7 +52,8 @@ export default function usePagination (url, params) {
     fetcher(query).then((response) => {
       pagination.value = response.data;
       current.value = response.data.current_page;
-      total.value = response.data.total
+      total.value = response.data.total;
+      max.value = response.data.last_page;
     }).catch(e => {
       notify({
         message: e.response?.data?.message ?? e.message,

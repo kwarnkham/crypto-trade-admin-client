@@ -1,7 +1,7 @@
 <template>
   <q-page padding>
-    <div class="text-right q-mb-sm" @click="addAgent">
-      <q-btn icon="add" />
+    <div class="text-right q-mb-sm">
+      <q-btn icon="add" @click="addAgent" />
     </div>
     <template v-if="pagination?.data?.length">
       <q-markup-table
