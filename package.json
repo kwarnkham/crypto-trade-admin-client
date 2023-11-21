@@ -10,7 +10,10 @@
     "format": "prettier --write \"**/*.{js,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
     "dev": "quasar dev",
-    "build": "quasar build"
+    "build": "cp .env.production .env && quasar build && cp .env.local .env && npm run export",
+    "export": "rm -f spa.zip && if [[ $OSTYPE == msys ]]; then npm run zip-windows; else npm run zip-macos; fi",
+    "zip-macos": "ditto -c -k --sequesterRsrc --keepParent dist/spa spa.zip",
+    "zip-windows": "cd dist && zip -r ../spa.zip ./spa && cd ../"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.4",

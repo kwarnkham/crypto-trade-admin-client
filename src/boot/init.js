@@ -10,13 +10,13 @@ let echo = new Echo({
   broadcaster: 'pusher',
   key: process.env.PUSHER_APP_KEY,
   wsHost: process.env.PUSHER_HOST || undefined,
-  wsPort: process.env.PUSHER_PORT || undefined,
-  wssPort: process.env.PUSHER_PORT || undefined,
-  forceTLS: process.env.PUSHER_SCHEME == 'https',
+  wsPort: process.env.PROD ? 443 : 6001,
+  wssPort: process.env.PROD ? 443 : 6001,
+  forceTLS: process.env.PROD,
   encrypted: true,
   disableStats: true,
   enabledTransports: ['ws', 'wss'],
-  cluster: process.env.PUSHER_APP_CLUSTER,
+  cluster: 'mt1',
   authorizer: (channel, options) => {
     return {
       authorize: (socketId, callback) => {
