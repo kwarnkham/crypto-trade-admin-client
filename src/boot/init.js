@@ -9,9 +9,9 @@ window.Pusher = Pusher;
 let echo = new Echo({
   broadcaster: 'pusher',
   key: process.env.PUSHER_APP_KEY,
-  // wsHost: process.env.PUSHER_HOST || undefined,
-  // wsPort: process.env.PUSHER_PORT || undefined,
-  // wssPort: process.env.PUSHER_PORT || undefined,
+  wsHost: process.env.PUSHER_HOST || undefined,
+  wsPort: process.env.PUSHER_PORT || undefined,
+  wssPort: process.env.PUSHER_PORT || undefined,
   forceTLS: process.env.PUSHER_SCHEME == 'https',
   encrypted: true,
   disableStats: true,
