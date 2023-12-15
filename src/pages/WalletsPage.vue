@@ -1,7 +1,22 @@
 <template>
   <q-page padding>
-    <div class="text-h5 row items-center justify-center">
-      Wallets <q-btn icon="add" flat color="primary" @click="addWallet" />
+    <div class="row q-mb-sm">
+      <div class="col">
+        <q-select
+          filled
+          v-model="agent"
+          :options="agents"
+          label="Choose Agents"
+          emit-value
+          map-options
+        />
+      </div>
+      <div class="col-3"></div>
+      <div class="col-7">
+        <div class="text-h5 row items-center">
+          Wallets <q-btn icon="add" flat color="primary" @click="addWallet" />
+        </div>
+      </div>
     </div>
     <template v-if="pagination?.data?.length">
       <q-markup-table separator="horizontal" flat bordered>
@@ -152,11 +167,14 @@ import { copyToClipboard, useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import { echo } from "src/boot/init";
 import usePagination from "src/composables/pagination";
-import { onBeforeUnmount, onMounted } from "vue";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 
 const { pagination, current, max } = usePagination("/wallets");
 
 const { notify, dialog, loading } = useQuasar();
+
+const agents = ref([]);
+const agent = ref(null);
 
 const copyAddress = (address) => {
   copyToClipboard(address)
@@ -364,6 +382,13 @@ const activateWallet = (walletId) => {
 };
 
 const addWallet = () => {
+  if (!agent.value) {
+    notify({
+      message: "Please choose agent.",
+      type: "negative",
+    });
+    return false;
+  }
   dialog({
     title: "Confirm",
     message: "Do you want to add a new system wallet?",
@@ -373,6 +398,9 @@ const addWallet = () => {
     api({
       method: "POST",
       url: "/wallets",
+      data: {
+        agent_id: agent.value,
+      },
     })
       .then(({ data }) => {
         pagination.value.data.push(data.wallet);
@@ -386,7 +414,27 @@ const addWallet = () => {
   });
 };
 
+const getAgents = () => {
+  api({
+    method: "GET",
+    url: `/agents`,
+  })
+    .then(({ data }) => {
+      agents.value = data.data.map((item) => ({
+        label: item.name,
+        value: item.id,
+      }));
+    })
+    .catch((error) => {
+      notify({
+        message: error?.response?.data?.message ?? error.message,
+        type: "negative",
+      });
+    });
+};
+
 onMounted(() => {
+  getAgents();
   echo.private(`wallets`).listen("WalletUpdated", ({ wallet }) => {
     updateWallet(wallet);
   });
