@@ -167,14 +167,19 @@ import { copyToClipboard, useQuasar } from "quasar";
 import { api } from "src/boot/axios";
 import { echo } from "src/boot/init";
 import usePagination from "src/composables/pagination";
-import { onBeforeUnmount, onMounted, ref } from "vue";
-
-const { pagination, current, max } = usePagination("/wallets");
+import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 
 const { notify, dialog, loading } = useQuasar();
 
 const agents = ref([]);
 const agent = ref(null);
+
+const { pagination, current, max, updateQueryAndFetch } = usePagination(
+  "/wallets",
+  {
+    agent_id: agent.value,
+  }
+);
 
 const copyAddress = (address) => {
   copyToClipboard(address)
@@ -424,6 +429,7 @@ const getAgents = () => {
         label: item.name,
         value: item.id,
       }));
+      agents.value.unshift({ label: "All", value: "" });
     })
     .catch((error) => {
       notify({
@@ -432,6 +438,10 @@ const getAgents = () => {
       });
     });
 };
+
+watch(agent, () => {
+  updateQueryAndFetch({ agent_id: agent.value });
+});
 
 onMounted(() => {
   getAgents();
