@@ -172,7 +172,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 const { notify, dialog, loading } = useQuasar();
 
 const agents = ref([]);
-const agent = ref(null);
+const agent = ref(1);
 
 const { pagination, current, max, updateQueryAndFetch } = usePagination(
   "/wallets",
@@ -389,7 +389,7 @@ const activateWallet = (walletId) => {
 const addWallet = () => {
   if (!agent.value) {
     notify({
-      message: "Please choose agent.",
+      message: "Please choose an agent.",
       type: "negative",
     });
     return false;
@@ -429,7 +429,7 @@ const getAgents = () => {
         label: item.name,
         value: item.id,
       }));
-      agents.value.unshift({ label: "All", value: "" });
+      agent.value = agents.value[0].value;
     })
     .catch((error) => {
       notify({
