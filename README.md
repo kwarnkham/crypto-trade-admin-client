@@ -1,7 +1,8 @@
-## Admin panel for managing wallets and agents
+## This is admin web app (https://crypto-admin.jjdhkpc.com/)
 
-1. Traditional network and crytpo network
-2. Native token(TRX), Contract token(USDT)
-3. Deposit
-4. Withdraw
-5. Transfer
+1. Agent management (key generation/reset, restriction, create)
+2. Wallet management (stacking for resources and monitoring)
+3. Deposit (monitoring)
+4. Withdraw (monitoring)
+5. Transfer (monitoring)
+6. TRC-20 transactions (monitoring)
